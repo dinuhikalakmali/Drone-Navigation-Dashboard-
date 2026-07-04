@@ -1,0 +1,9 @@
+export const currency = '$';
+export const currentYear = new Date().getFullYear();
+export const appName = 'Intelligent Drone-Based System For Real Time Dashboard ';
+export const appTitle = 'Intelligent Drone-Based System For Real Time Dashboard';
+export const appDescription = 'UBold is a modern, responsive admin dashboard available on ThemeForest. Ideal for building CRM, CMS, project management tools, and custom web applications with a clean UI, flexible layouts, and rich features.';
+export const author = 'Tech Team';
+export const authorWebsite = '';
+export const authorContact = '';
+export const basePath = '';
