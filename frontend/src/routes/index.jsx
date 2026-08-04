@@ -8,6 +8,8 @@ const Dashboard = lazy(() => import("@/views/dashboards/dashboard"));
 // Auth
 const Login = lazy(() => import("@/views/auth/auth-1/sign-in/index"));
 const Signup = lazy(() => import("@/views/auth/auth-1/sign-up/index"));
+const ResetPassword = lazy(() => import("@/views/auth/auth-1/reset-password/index"));
+
 
 // Landing
 const Landing = lazy(() => import("@/views/landing"));
@@ -53,7 +55,7 @@ const mainLayoutRoutes = [
         path: "/dashboard",
         element: (
           // <ProtectedRoute>
-            <Dashboard />
+          <Dashboard />
           // </ProtectedRoute>
         ),
       },
@@ -61,7 +63,7 @@ const mainLayoutRoutes = [
         path: "/Inspection",
         element: (
           // <ProtectedRoute>
-            <Inspection />
+          <Inspection />
           // </ProtectedRoute>
         ),
       },
@@ -69,7 +71,7 @@ const mainLayoutRoutes = [
         path: "/Defects",
         element: (
           // <ProtectedRoute>
-            <Defects />
+          <Defects />
           // </ProtectedRoute>
         ),
       },
@@ -77,7 +79,7 @@ const mainLayoutRoutes = [
         path: "/add-report",
         element: (
           // <ProtectedRoute>
-            <AddReport />
+          <AddReport />
           // </ProtectedRoute>
         ),
       },
@@ -85,7 +87,7 @@ const mainLayoutRoutes = [
         path: "/report-history",
         element: (
           // <ProtectedRoute>
-            <ReportHistory />
+          <ReportHistory />
           // </ProtectedRoute>
         ),
       },
@@ -93,7 +95,7 @@ const mainLayoutRoutes = [
         path: "/asset/view/:assetId",
         element: (
           // <ProtectedRoute>
-            <AssetDetails />
+          <AssetDetails />
           // </ProtectedRoute>
         ),
       },
@@ -101,7 +103,7 @@ const mainLayoutRoutes = [
         path: "/widgets",
         element: (
           // <ProtectedRoute>
-            <Widgets />
+          <Widgets />
           // </ProtectedRoute>
         ),
       },
@@ -115,6 +117,7 @@ const mainLayoutRoutes = [
 const publicRoutes = [
   { path: "/auth/login", element: <Login /> },
   { path: "/landing", element: <Landing /> },
+  { path: "/auth-1/reset-password", element: <ResetPassword /> },
   { path: "/error/400", element: <Error400 /> },
   { path: "/error/401", element: <Error401 /> },
   { path: "/error/403", element: <Error403 /> },
