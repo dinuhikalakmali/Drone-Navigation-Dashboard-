@@ -1,8 +1,9 @@
 import { useLayoutContext } from '@/context/useLayoutContext';
 import { scrollToElement } from '@/helpers/layout';
 import { menuItems } from '@/layouts/components/data';
+import { hasAccess } from "@/helpers/rolePermissions";
 import { Link, useLocation } from "react-router";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Collapse } from 'react-bootstrap';
 import { TbChevronDown } from 'react-icons/tb';
 const MenuItemWithChildren = ({
@@ -38,21 +39,21 @@ const MenuItemWithChildren = ({
     }
   };
   return <li className={`side-nav-item ${isOpen ? 'active' : ''}`}>
-      <button onClick={toggleOpen} className="side-nav-link" aria-expanded={isOpen}>
-        {item.icon && <span className="menu-icon">
-            <item.icon />
-          </span>}
-        <span className="menu-text">{item.label}</span>
-        {item.badge ? <span className={`badge bg-${item.badge.variant}`}>{item.badge.text}</span> : <TbChevronDown className="menu-arrow" />}
-      </button>
-      <Collapse in={isOpen}>
-        <div>
-          <ul className="sub-menu">
-            {(item.children || []).map(child => child.children ? <MenuItemWithChildren key={child.key} item={child} openMenuKey={openMenuKey} setOpenMenuKey={setOpenMenuKey} level={level + 1} /> : <MenuItem key={child.key} item={child} />)}
-          </ul>
-        </div>
-      </Collapse>
-    </li>;
+    <button onClick={toggleOpen} className="side-nav-link" aria-expanded={isOpen}>
+      {item.icon && <span className="menu-icon">
+        <item.icon />
+      </span>}
+      <span className="menu-text">{item.label}</span>
+      {item.badge ? <span className={`badge bg-${item.badge.variant}`}>{item.badge.text}</span> : <TbChevronDown className="menu-arrow" />}
+    </button>
+    <Collapse in={isOpen}>
+      <div>
+        <ul className="sub-menu">
+          {(item.children || []).map(child => child.children ? <MenuItemWithChildren key={child.key} item={child} openMenuKey={openMenuKey} setOpenMenuKey={setOpenMenuKey} level={level + 1} /> : <MenuItem key={child.key} item={child} />)}
+        </ul>
+      </div>
+    </Collapse>
+  </li>;
 };
 const MenuItem = ({
   item
@@ -71,34 +72,85 @@ const MenuItem = ({
     }
   };
   return <li className={`side-nav-item ${isActive ? 'active' : ''}`}>
-      <Link to={item.url ?? '/'} onClick={toggleBackdrop} className={`side-nav-link  ${isActive ? 'active' : ''} ${item.isDisabled ? 'disabled' : ''} ${item.isSpecial ? 'special-menu' : ''}`}>
-        {item.icon && <span className="menu-icon">
-            <item.icon />
-          </span>}
-        <span className="menu-text">{item.label}</span>
-        {item.badge && <span className={`badge text-bg-${item.badge.variant} opacity-50`}>{item.badge.text}</span>}
-      </Link>
-    </li>;
+    <Link to={item.url ?? '/'} onClick={toggleBackdrop} className={`side-nav-link  ${isActive ? 'active' : ''} ${item.isDisabled ? 'disabled' : ''} ${item.isSpecial ? 'special-menu' : ''}`}>
+      {item.icon && <span className="menu-icon">
+        <item.icon />
+      </span>}
+      <span className="menu-text">{item.label}</span>
+      {item.badge && <span className={`badge text-bg-${item.badge.variant} opacity-50`}>{item.badge.text}</span>}
+    </Link>
+  </li>;
 };
 const AppMenu = () => {
   const [openMenuKey, setOpenMenuKey] = useState(null);
+
+  // Filter menu items according to role
+  const filteredMenuItems = useMemo(() => {
+    const filterItems = (items) => {
+      return items
+        .map((item) => {
+          // Title items – keep them for now
+          if (item.isTitle) return item;
+
+          // Item with children (e.g. Reports)
+          if (item.children) {
+            const filteredChildren = filterItems(item.children);
+
+            // Hide the parent if no children left
+            if (filteredChildren.length === 0) return null;
+
+            return { ...item, children: filteredChildren };
+          }
+
+          // Normal item with url
+          if (item.url && !hasAccess(item.url)) {
+            return null;
+          }
+
+          return item;
+        })
+        .filter(Boolean); // remove nulls
+    };
+
+    return filterItems(menuItems);
+  }, []);
+
   const scrollToActiveLink = () => {
-    const activeItem = document.querySelector('.side-nav-link.active');
+    const activeItem = document.querySelector(".side-nav-link.active");
     if (activeItem) {
-      const simpleBarContent = document.querySelector('#sidenav .simplebar-content-wrapper');
+      const simpleBarContent = document.querySelector(
+        "#sidenav .simplebar-content-wrapper"
+      );
       if (simpleBarContent) {
         const offset = activeItem.offsetTop - window.innerHeight * 0.4;
         scrollToElement(simpleBarContent, offset, 500);
       }
     }
   };
+
   useEffect(() => {
     setTimeout(() => scrollToActiveLink(), 100);
   }, []);
-  return <ul className="side-nav">
-      {menuItems.map(item => item.isTitle ? <li className={'side-nav-title mt-2'} key={item.key}>
+
+  return (
+    <ul className="side-nav">
+      {filteredMenuItems.map((item) =>
+        item.isTitle ? (
+          <li className="side-nav-title mt-2" key={item.key}>
             {item.label}
-          </li> : item.children ? <MenuItemWithChildren key={item.key} item={item} openMenuKey={openMenuKey} setOpenMenuKey={setOpenMenuKey} /> : <MenuItem key={item.key} item={item} />)}
-    </ul>;
+          </li>
+        ) : item.children ? (
+          <MenuItemWithChildren
+            key={item.key}
+            item={item}
+            openMenuKey={openMenuKey}
+            setOpenMenuKey={setOpenMenuKey}
+          />
+        ) : (
+          <MenuItem key={item.key} item={item} />
+        )
+      )}
+    </ul>
+  );
 };
 export default AppMenu;

@@ -19,7 +19,20 @@ const modules = {
   ],
 };
 
-
+export const assetTypes = [
+  {
+    value: "drone",
+    label: "Drone"
+  },
+  {
+    value: "sensor",
+    label: "Sensor"
+  },
+  {
+    value: "camera",
+    label: "Camera"
+  }
+];
 
 const AssetInformation = ({
   assetName,
@@ -68,7 +81,7 @@ const AssetInformation = ({
             </FormGroup>
           </Col>
 
-          
+
 
           <Col lg={6}>
             <FormGroup className="mb-3">
@@ -109,13 +122,13 @@ const AssetInformation = ({
             </FormGroup>
           </Col> */}
 
-          
 
-          
 
-          
 
-          
+
+
+
+
 
           <Col xs={12}>
             <FormGroup>

@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Navigate } from "react-router";
+import { Navigate } from "react-router-dom";
 import MainLayout from "@/layouts/MainLayout";
 
 // Dashboards
@@ -9,7 +9,7 @@ const Dashboard = lazy(() => import("@/views/dashboards/dashboard"));
 const Login = lazy(() => import("@/views/auth/auth-1/sign-in/index"));
 const Signup = lazy(() => import("@/views/auth/auth-1/sign-up/index"));
 const ResetPassword = lazy(() => import("@/views/auth/auth-1/reset-password/index"));
-
+const NewPassword = lazy(() => import("@/views/auth/auth-1/new-password/index"));
 
 // Landing
 const Landing = lazy(() => import("@/views/landing"));
@@ -33,13 +33,63 @@ const Error408 = lazy(() => import("@/views/error/408"));
 const Error500 = lazy(() => import("@/views/error/500"));
 
 // ---------------------------
-// ProtectedRoute Component
+// Role Permissions
 // ---------------------------
-const ProtectedRoute = ({ children }) => {
+const ROLE_PERMISSIONS = {
+  "site engineer": [
+    "/dashboard",
+    "/Inspection",
+    "/add-report",
+    "/report-history",
+    "/asset/view",
+    "/widgets",
+  ],
+  "project supervisor": ["*"], // full access
+  admin: ["*"],                // full access
+  "quality manager": ["/Defects"],
+};
+
+// Helper: get current user role from localStorage
+const getUserRole = () => {
+  try {
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    return userData?.type?.toLowerCase() || null;
+  } catch {
+    return null;
+  }
+};
+
+// ---------------------------
+// ProtectedRoute (Auth + Role)
+// ---------------------------
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const token = localStorage.getItem("authToken");
-  if (!token) {
+  const role = getUserRole();
+
+  // Not logged in
+  if (!token || !role) {
     return <Navigate to="/auth/login" replace />;
   }
+
+  // Full access roles
+  if (ROLE_PERMISSIONS[role]?.includes("*")) {
+    return children;
+  }
+
+  // Check if current path is allowed for this role
+  // (we pass the path pattern via allowedRoles prop)
+  if (allowedRoles.length > 0) {
+    const isAllowed = allowedRoles.some((path) =>
+      ROLE_PERMISSIONS[role]?.some(
+        (allowed) => path.startsWith(allowed) || allowed === path
+      )
+    );
+
+    if (!isAllowed) {
+      return <Navigate to="/error/403" replace />;
+    }
+  }
+
   return children;
 };
 
@@ -51,60 +101,61 @@ const mainLayoutRoutes = [
     element: <MainLayout />,
     children: [
       { path: "/", element: <Navigate to="/auth/login" replace /> },
+
       {
         path: "/dashboard",
         element: (
-          // <ProtectedRoute>
-          <Dashboard />
-          // </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["/dashboard"]}>
+            <Dashboard />
+          </ProtectedRoute>
         ),
       },
       {
         path: "/Inspection",
         element: (
-          // <ProtectedRoute>
-          <Inspection />
-          // </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["/Inspection"]}>
+            <Inspection />
+          </ProtectedRoute>
         ),
       },
       {
         path: "/Defects",
         element: (
-          // <ProtectedRoute>
-          <Defects />
-          // </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["/Defects"]}>
+            <Defects />
+          </ProtectedRoute>
         ),
       },
       {
         path: "/add-report",
         element: (
-          // <ProtectedRoute>
-          <AddReport />
-          // </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["/add-report"]}>
+            <AddReport />
+          </ProtectedRoute>
         ),
       },
       {
         path: "/report-history",
         element: (
-          // <ProtectedRoute>
-          <ReportHistory />
-          // </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["/report-history"]}>
+            <ReportHistory />
+          </ProtectedRoute>
         ),
       },
       {
         path: "/asset/view/:assetId",
         element: (
-          // <ProtectedRoute>
-          <AssetDetails />
-          // </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["/asset/view"]}>
+            <AssetDetails />
+          </ProtectedRoute>
         ),
       },
       {
         path: "/widgets",
         element: (
-          // <ProtectedRoute>
-          <Widgets />
-          // </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["/widgets"]}>
+            <Widgets />
+          </ProtectedRoute>
         ),
       },
     ],
@@ -112,12 +163,14 @@ const mainLayoutRoutes = [
 ];
 
 // ---------------------------
-// Routes without MainLayout (login, landing, errors)
+// Public routes
 // ---------------------------
 const publicRoutes = [
   { path: "/auth/login", element: <Login /> },
-  { path: "/landing", element: <Landing /> },
+  { path: "/auth-1/sign-up", element: <Signup /> },
   { path: "/auth-1/reset-password", element: <ResetPassword /> },
+  { path: "/auth-1/new-password", element: <NewPassword /> },
+  { path: "/landing", element: <Landing /> },
   { path: "/error/400", element: <Error400 /> },
   { path: "/error/401", element: <Error401 /> },
   { path: "/error/403", element: <Error403 /> },
@@ -126,7 +179,4 @@ const publicRoutes = [
   { path: "/error/500", element: <Error500 /> },
 ];
 
-// ---------------------------
-// Export all routes
-// ---------------------------
 export const routes = [...mainLayoutRoutes, ...publicRoutes];

@@ -24,34 +24,46 @@ const Index = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    // navigate("/dashboard");
 
     try {
       const response = await axios.post(
         "http://localhost:5000/api/auth/login",
         { email: username, password }
       );
-      console.log(response);
 
-      if (response.status == 200) {
-        if (response.data.user.type == "site engineer" || response.data.user.type == "project supervisor" || response.data.user.type == "quality manager") {
-          localStorage.setItem(
-            "authToken",
-            response.data.token || "dummyToken"
-          );
-          localStorage.setItem("userData", JSON.stringify(response.data.user));
-          navigate("/dashboard");
+      if (response.status === 200) {
+        const userType = response.data.user.type?.toLowerCase();
+
+        const allowedTypes = [
+          "site engineer",
+          "project supervisor",
+          "quality manager",
+          "admin",
+        ];
+
+        if (!allowedTypes.includes(userType)) {
+          setError("User type is invalid!");
+          return;
         }
-        else {
-          setError("User type is invalid!")
+
+        // Save token & user data
+        localStorage.setItem("authToken", response.data.token || "dummyToken");
+        localStorage.setItem("userData", JSON.stringify(response.data.user));
+
+        // Role-based redirect
+        if (userType === "quality manager") {
+          navigate("/Defects");          // Quality Manager → Defects only
+        } else {
+          navigate("/dashboard");        // Everyone else → Dashboard
         }
-        
       } else {
         setError("Username or password is incorrect");
       }
     } catch (err) {
       console.error(err);
-      setError("Something went wrong. Please try again.");
+      const msg =
+        err.response?.data?.message || "Something went wrong. Please try again.";
+      setError(msg);
     }
   };
 

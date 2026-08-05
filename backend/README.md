@@ -1,71 +1,57 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+//Install this
+npm install nodemailer
 
-Currently, two official plugins are available:
+// Users
+✅ Created: supervisor1@test.com (project supervisor)
+✅ Created: qualitymanager1@test.com (quality manager)
+✅ Created: admin1@test.com (admin)
+✅ Created: siteengineer2@test.com (site engineer)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
+ // Add users
+$users = @(
+    @{
+        name     = "Site Engineer 1"
+        email    = "siteengineer1@test.com"
+        password = "123456"
+        type     = "site engineer"
     },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
+    @{
+        name     = "Project Supervisor 1"
+        email    = "supervisor1@test.com"
+        password = "123456"
+        type     = "project supervisor"
     },
-  },
-])
-```
-"# Drone-Dashboard-Final-Year-Project" 
-"# Drone-Dashboard-Final-Year-Project" 
+    @{
+        name     = "Quality Manager 1"
+        email    = "qualitymanager1@test.com"
+        password = "123456"
+        type     = "quality manager"
+    },
+    @{
+        name     = "Admin 1"
+        email    = "admin1@test.com"
+        password = "123456"
+        type     = "admin"
+    },
+    @{
+        name     = "Site Engineer 2"
+        email    = "siteengineer2@test.com"
+        password = "123456"
+        type     = "site engineer"
+    }
+)
+
+foreach ($user in $users) {
+    $body = $user | ConvertTo-Json
+    try {
+        $response = Invoke-RestMethod -Uri "http://localhost:5000/api/auth/register" `
+            -Method POST `
+            -ContentType "application/json" `
+            -Body $body
+        Write-Host "✅ Created: $($user.email) ($($user.type))" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "❌ Failed: $($user.email) → $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
