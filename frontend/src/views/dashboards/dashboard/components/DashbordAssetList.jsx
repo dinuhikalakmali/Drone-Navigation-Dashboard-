@@ -93,11 +93,10 @@ const DashbordAssetsList = () => {
       header: "Status",
       cell: ({ row }) => (
         <span
-          className={`badge ${
-            row.original.status === "active"
-              ? "badge-soft-success"
-              : "badge-soft-warning"
-          } fs-xxs`}
+          className={`badge ${row.original.status === "active"
+            ? "badge-soft-success"
+            : "badge-soft-warning"
+            } fs-xxs`}
         >
           {row.original.status}
         </span>
@@ -165,7 +164,7 @@ const DashbordAssetsList = () => {
             </div>
           ) : (
             <>
-              {/* <DataTable table={table} emptyMessage="No assets found" /> */}
+              {<DataTable table={table} emptyMessage="No assets found" />}
 
               {table.getRowModel().rows.length > 0 && (
                 <CardFooter className="border-0">
