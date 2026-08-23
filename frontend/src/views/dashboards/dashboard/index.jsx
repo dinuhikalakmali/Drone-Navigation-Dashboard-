@@ -57,21 +57,26 @@ const Index = () => {
       }
     };
 
-    const test = async () => {
+    const fetchTotalDefectCount = async () => {
       try {
+        // 1. Use the correct endpoint
         const response = await axios.get(
-          "http://localhost:5000/api/defect"
+          "http://localhost:5000/api/defects/count"
         );
-        console.log("yooo" + response.data.data);
-        const count = response.data?.status ? response.data.count : 0;
-        setTotalDefect(response.data.data);
-        console.log("Inactive assets count fetched:", inactive);
+
+        // 2. Extract the 'count' from {"success":true,"count":23}
+        const count = response.data?.success ? response.data.count : 0;
+
+        // 3. Update the state
+        setTotalDefect(count);
+        console.log("Total defects count fetched:", count);
+
       } catch (error) {
-        console.error("Error fetching inactive assets count:", error);
+        console.error("Error fetching total defects count:", error);
       }
     };
 
-    test();
+    fetchTotalDefectCount();
     // fetchTotalAssetsCount();
     // fetchActiveAssetsCount();
     // fetchInactiveAssetCount();
@@ -84,14 +89,16 @@ const Index = () => {
         <Col xs={12} className="mb-4">
           <Row lg={3} md={2} sm={1} className="g-4">
             <Col>
-              <StatCard
-                item={{
-                  title: "Total Defect Summary",
-                  iconBg: "success", // Green
-                  icon: BsWrenchAdjustable,
-                  value: totalDefect, // Fixed to use correct state
-                }}
-              />
+              <Link to="/defects-list" style={{ textDecoration: 'none' }}>
+                <StatCard
+                  item={{
+                    title: "Total Defect Summary",
+                    iconBg: "success",
+                    icon: BsWrenchAdjustable,
+                    value: totalDefect,
+                  }}
+                />
+              </Link>
             </Col>
             <Col>
               <StatCard
@@ -110,10 +117,10 @@ const Index = () => {
                     title: "Drone Controller",
                     iconBg: "warning", // Yellow/Orange
                     icon: BsWrenchAdjustable,
-                     value: 1,// Example value - replace with real data if available
+                    value: 1,// Example value - replace with real data if available
                   }}
                 />
-                </Link>
+              </Link>
             </Col>
             <Col>
               <StatCard

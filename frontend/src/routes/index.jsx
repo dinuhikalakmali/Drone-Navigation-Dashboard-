@@ -1,10 +1,9 @@
 import { lazy } from "react";
 import { Navigate } from "react-router-dom";
 import MainLayout from "@/layouts/MainLayout";
-
 // Dashboards
 const Dashboard = lazy(() => import("@/views/dashboards/dashboard"));
-
+const DefectsList = lazy(() => import("@/views/dashboards/dashboard/components/DefectsList")); // Using lazy!
 // Auth
 const Login = lazy(() => import("@/views/auth/auth-1/sign-in/index"));
 const Signup = lazy(() => import("@/views/auth/auth-1/sign-up/index"));
@@ -43,10 +42,14 @@ const ROLE_PERMISSIONS = {
     "/report-history",
     "/asset/view",
     "/widgets",
+    "/defects-list",
   ],
   "project supervisor": ["*"], // full access
   admin: ["*"],                // full access
-  "quality manager": ["/Defects"],
+  "quality manager": [
+    "/Defects",
+    "/defects-list",
+  ],
 };
 
 // Helper: get current user role from localStorage
@@ -107,6 +110,14 @@ const mainLayoutRoutes = [
         element: (
           <ProtectedRoute allowedRoles={["/dashboard"]}>
             <Dashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/defects-list",
+        element: (
+          <ProtectedRoute allowedRoles={["/defects-list"]}>
+            <DefectsList />
           </ProtectedRoute>
         ),
       },

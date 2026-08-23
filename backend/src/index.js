@@ -3,8 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRouter from './routers/authRouter.js';
-import defectRouter from './routers/defectRouter.js';
-
+import defectRouter from './routers/detectionRouter.js';
 dotenv.config();
 connectDB();
 
