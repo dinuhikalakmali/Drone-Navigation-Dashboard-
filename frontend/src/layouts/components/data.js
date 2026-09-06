@@ -111,12 +111,12 @@ export const menuItems = [
     label: "All Functions",
     isTitle: true,
   },
-  {
-    key: "Inspection",
-    label: "Inspection",
-    icon: LuQrCode,
-    url: "/Inspection",
-  },
+  // {
+  //   key: "Inspection",
+  //   label: "Inspection",
+  //   icon: LuQrCode,
+  //   url: "/Inspection",
+  // },
   {
     key: "Defects",
     label: "Defects",
@@ -157,8 +157,8 @@ export const menuItems = [
   {
     key: "Settings",
     label: "Settings",
-    icon: TbCheckupList,
-    url: "#",
+    icon: TbSettings2,
+    url: "/settings",
   },
 ];
 

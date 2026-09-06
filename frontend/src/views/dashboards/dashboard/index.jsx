@@ -169,11 +169,11 @@ const Index = () => {
         </Col>
       </Row> */}
 
-      <Row>
+      {/* <Row>
         <Col xs={12}>
           <DashbordAssetsList />
         </Col>
-      </Row>
+      </Row> */}
     </Container>
   );
 };
