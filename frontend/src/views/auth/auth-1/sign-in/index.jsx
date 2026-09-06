@@ -37,7 +37,7 @@ const Index = () => {
         const allowedTypes = [
           "site engineer",
           "project supervisor",
-          "quality manager",
+          "qa officer",
           "admin",
         ];
 
@@ -51,8 +51,8 @@ const Index = () => {
         localStorage.setItem("userData", JSON.stringify(response.data.user));
 
         // Role-based redirect
-        if (userType === "quality manager") {
-          navigate("/Defects");          // Quality Manager → Defects only
+        if (userType === "qa officer") {
+          navigate("/Defects");          // Qa officer → Defects only
         } else {
           navigate("/dashboard");        // Everyone else → Dashboard
         }

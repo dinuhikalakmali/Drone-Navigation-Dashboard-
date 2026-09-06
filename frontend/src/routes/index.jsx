@@ -23,6 +23,9 @@ const AddReport = lazy(() => import("@/views/drones/addReport"));
 const ReportHistory = lazy(() => import("@/views/drones/reportHistory"));
 const AssetDetails = lazy(() => import("@/views/drones/addReport/[assetId]"));
 
+// Settings
+const Settings = lazy(() => import("@/views/pages/settings"));
+
 // Error
 const Error400 = lazy(() => import("@/views/error/400"));
 const Error401 = lazy(() => import("@/views/error/401"));
@@ -46,7 +49,7 @@ const ROLE_PERMISSIONS = {
   ],
   "project supervisor": ["*"], // full access
   admin: ["*"],                // full access
-  "quality manager": [
+  "qa officer": [
     "/Defects",
     "/defects-list",
   ],
@@ -168,6 +171,10 @@ const mainLayoutRoutes = [
             <Widgets />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "/settings",
+        element: <Settings />,
       },
     ],
   },

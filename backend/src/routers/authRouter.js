@@ -8,9 +8,16 @@ import nodemailer from 'nodemailer';
 const router = express.Router();
 
 // ===================== REGISTER =====================
-router.post('/register', async (req, res) => {
+// Public registration or admin user creation
+router.post('/register', protect, async (req, res) => {
   try {
     const { name, email, password, type } = req.body;
+
+    // Check if user is admin when creating users with specific roles (from settings)
+    const userData = req.user; // From protect middleware
+    if (type && type !== 'user' && userData?.type !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can create users with specific roles' });
+    }
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email and password are required' });
@@ -19,6 +26,10 @@ router.post('/register', async (req, res) => {
     const exists = await User.findOne({ email });
     if (exists) {
       return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -194,6 +205,103 @@ router.get('/profile', protect, (req, res) => {
   res.json(req.user);
 });
 
+// ===================== GET ALL USERS (Admin Only) =====================
+router.get('/users', protect, async (req, res) => {
+  try {
+    // Check if user is admin
+    const user = await User.findById(req.user.id);
+    if (!user || user.type?.toLowerCase() !== 'admin') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Only admins can view all users' 
+      });
+    }
 
+    const allUsers = await User.find({}, { password: 0 }).sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      data: allUsers
+    });
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching users',
+      error: err.message 
+    });
+  }
+});
+
+// ===================== UPDATE USER ROLE (Admin Only) =====================
+router.put('/users/:id/role', protect, async (req, res) => {
+  try {
+    // Check if user is admin
+    const adminUser = await User.findById(req.user.id);
+    if (!adminUser || adminUser.type?.toLowerCase() !== 'admin') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Only admins can update user roles' 
+      });
+    }
+
+    const { role } = req.body;
+
+    if (!role) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Role is required' 
+      });
+    }
+
+    // Validate role
+    const validRoles = ['admin', 'project supervisor', 'site engineer', 'qa officer', 'user'];
+    if (!validRoles.includes(role.toLowerCase())) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid role. Must be one of: ' + validRoles.join(', ') 
+      });
+    }
+
+    // Prevent removing last admin
+    if (adminUser._id.toString() === req.params.id && role.toLowerCase() !== 'admin') {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Cannot remove admin role from your own account' 
+      });
+    }
+
+    const targetUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { type: role.toLowerCase() },
+      { new: true, runValidators: true }
+    );
+
+    if (!targetUser) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'User not found' 
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'User role updated successfully',
+      data: {
+        id: targetUser._id,
+        name: targetUser.name,
+        email: targetUser.email,
+        type: targetUser.type
+      }
+    });
+  } catch (err) {
+    console.error('Error updating user role:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error updating user role',
+      error: err.message 
+    });
+  }
+});
 
 export default router;

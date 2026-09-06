@@ -1,5 +1,5 @@
 import { userDropdownItems } from "@/layouts/components/data";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Fragment } from "react";
 import {
   Dropdown,
@@ -11,6 +11,17 @@ import {
 import { TbChevronDown } from "react-icons/tb";
 import user3 from "@/assets/images/users/user-3.jpg";
 const UserProfile = () => {
+  const navigate = useNavigate();
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const displayName = userData.name || userData.email || "User";
+
+  const handleLogout = (event) => {
+    event.preventDefault();
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userData");
+    navigate("/auth/login", { replace: true });
+  };
+
   return (
     <div className="topbar-item nav-user">
       <Dropdown align="end">
@@ -26,7 +37,7 @@ const UserProfile = () => {
             alt="user-image"
           />
           <div className="d-lg-flex align-items-center gap-1 d-none">
-            <h5 className="my-0">User</h5>
+            <h5 className="my-0">{displayName}</h5>
             <TbChevronDown className="align-middle" />
           </div>
         </DropdownToggle>
@@ -44,6 +55,7 @@ const UserProfile = () => {
                   as={Link}
                   to={item.url ?? ""}
                   className={item.class}
+                  onClick={item.label === "Log Out" ? handleLogout : undefined}
                 >
                   {item.icon && (
                     <item.icon className="me-2 fs-17 align-middle" />

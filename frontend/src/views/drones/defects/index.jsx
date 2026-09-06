@@ -21,6 +21,16 @@ const AddAsset = () => {
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState([]);
 
+  // Defect-specific state
+  const [defectType, setDefectType] = useState("");
+  const [confidence, setConfidence] = useState("");
+  const [severity, setSeverity] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+  const [droneId, setDroneId] = useState("");
+  const [cameraId, setCameraId] = useState("");
+  const [defectImage, setDefectImage] = useState(null);
+
   // Fetch next Asset ID from backend
   const fetchNextAssetID = async () => {
     try {
@@ -141,6 +151,69 @@ const AddAsset = () => {
     }
   };
 
+  // Handle adding a defect
+  const handleAddDefect = async () => {
+    if (!defectType || !confidence || !severity || !latitude || !longitude || !defectImage) {
+      return alert("Please fill all required defect fields!");
+    }
+
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(defectImage);
+      reader.onload = async () => {
+        const base64Image = reader.result.split(",")[1];
+
+        const payload = {
+          crack_type: defectType,
+          confidence: parseFloat(confidence),
+          severity: severity,
+          location: {
+            lat: parseFloat(latitude),
+            Lng: parseFloat(longitude),
+          },
+          image: base64Image,
+          drone_id: droneId || "unknown",
+          camera_id: cameraId || "unknown",
+          detected_time: model ? new Date(model).toISOString() : new Date().toISOString(),
+          description: description,
+          status: "open",
+        };
+
+        try {
+          const response = await axios.post(
+            "http://localhost:5000/api/defects",
+            payload,
+            { headers: { "Content-Type": "application/json" } }
+          );
+
+          if (response.data.success || response.data.message === "Defect created" || response.status === 201) {
+            alert("Defect added successfully!");
+
+            // Reset defect fields
+            setDefectType("");
+            setConfidence("");
+            setSeverity("");
+            setLatitude("");
+            setLongitude("");
+            setDroneId("");
+            setCameraId("");
+            setDefectImage(null);
+            setModel("");
+            setDescription("");
+          } else {
+            alert("Failed to add defect: " + (response.data.message || "Unknown error"));
+          }
+        } catch (error) {
+          console.error("Error response:", error.response);
+          alert(error.response?.data?.message || error.message || "Error adding defect");
+        }
+      };
+    } catch (error) {
+      console.error(error);
+      alert("Error processing defect image");
+    }
+  };
+
   return (
     <Container fluid className="py-3">
       <PageBreadcrumb title="Defect" subtitle="Drone Navigation" />
@@ -171,6 +244,24 @@ const AddAsset = () => {
             setOwnershipType={setOwnershipType}
             description={description}
             setDescription={setDescription}
+            // Defect props
+            defectType={defectType}
+            setDefectType={setDefectType}
+            confidence={confidence}
+            setConfidence={setConfidence}
+            severity={severity}
+            setSeverity={setSeverity}
+            latitude={latitude}
+            setLatitude={setLatitude}
+            longitude={longitude}
+            setLongitude={setLongitude}
+            droneId={droneId}
+            setDroneId={setDroneId}
+            cameraId={cameraId}
+            setCameraId={setCameraId}
+            defectImage={defectImage}
+            setDefectImage={setDefectImage}
+            onAddDefect={handleAddDefect}
           />
           <AssetImage files={files} setFiles={setFiles} />
 

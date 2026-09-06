@@ -8,7 +8,7 @@ export const ROLE_PERMISSIONS = {
   ],
   "project supervisor": ["*"],
   admin: ["*"],
-  "quality manager": ["/Defects"],
+  "qa officer": ["/Defects"],
 };
 
 export const getUserRole = () => {
