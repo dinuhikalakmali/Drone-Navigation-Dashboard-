@@ -40,10 +40,26 @@ export const startDefectWatcher = async () => {
     });
 
     changeStream.on('error', (error) => {
-      console.error('❌ Change stream error:', error.message);
-      // Attempt to reconnect after 5 seconds
-      console.log('🔄 Attempting to restart defect watcher...');
-      setTimeout(() => startDefectWatcher(), 5000);
+console.error('❌ Change stream error:', error.message);
+      
+      // 1. Explicitly close the broken stream
+      try {
+        changeStream.close();
+      } catch (err) {
+        // Ignore close errors
+      }
+
+      // 2. Wait 5 seconds to let network settle
+      setTimeout(() => {
+        // Defect.db.readyState === 1 means Mongoose is successfully connected
+        if (Defect.db.readyState === 1) {
+          console.log('🔄 Database connected. Attempting to restart defect watcher...');
+          startDefectWatcher();
+        } else {
+          console.log('⚠️ Database disconnected. Switching to fallback poller...');
+          startDefectPoller(); // Trigger your built-in fallback!
+        }
+      }, 5000);
     });
 
     changeStream.on('close', () => {
@@ -64,7 +80,11 @@ export const startDefectWatcher = async () => {
  * Fallback polling mechanism in case Change Streams fail
  * Checks database every 30 seconds for new high severity defects
  */
+let activePollInterval = null;
 export const startDefectPoller = async () => {
+  if (activePollInterval) {
+    clearInterval(activePollInterval);
+  }
   let lastCheckTime = new Date();
   let isProcessing = false;
 
