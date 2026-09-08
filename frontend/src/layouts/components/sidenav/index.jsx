@@ -5,6 +5,7 @@ import UserProfile from "@/layouts/components/sidenav/components/UserProfile";
 import { Link } from "react-router";
 import { TbMenu4, TbX } from "react-icons/tb";
 import SimpleBar from "simplebar-react";
+import droneLogo from "../../../assets/images/drone logo.jpeg";
 const Sidenav = () => {
   const { sidenav, hideBackdrop, changeSideNavSize } = useLayoutContext();
   const toggleSidebar = () => {
@@ -22,13 +23,15 @@ const Sidenav = () => {
       <Link to="/" className="logo">
         <span className="logo logo-light" style={{ height: 70 }}>
           <span>
-            <h2
-              className={`py-2 text-white transition-all duration-300 ${
-                sidenav.size === "on-hover" ? "text-sm" : "text-2xl"
-              }`}
-            >
-              {sidenav.size === "on-hover" ? "S" : "D - R - S"}
-            </h2>
+            <img
+              src={droneLogo}
+              alt="Drone Logo"
+              style={{
+                width: sidenav.size === "on-hover" ? "32px" : "140px",
+                height: sidenav.size === "on-hover" ? "32px" : "70px",
+                objectFit: "contain"
+              }}
+            />
           </span>
         </span>
       </Link>
